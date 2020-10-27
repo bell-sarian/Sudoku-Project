@@ -3,8 +3,8 @@
 // Project 4 - Sudoku Solver w/ Variable Ordering and Forward Checking
 // File: Sudoku.java
 //
-// Group Member Names:
-// Due Date:
+// Group Member Names: Mina Anđelković, Bell'aria Sarian
+// Due Date: 11/09/2020
 // 
 //
 // Description: A Backtracking program in Java to solve the Sudoku problem.
