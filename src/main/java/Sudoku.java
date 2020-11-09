@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-import jdk.internal.net.http.common.Pair;
-
 public class Sudoku {
 	// Constants
 	final static int UNASSIGNED = 0; // UNASSIGNED is used for empty cells in sudoku grid
 	final static int N = 9;// N is used for size of Sudoku grid. Size will be NxN
 	static int numBacktracks = 0;
+	static int[][][] domain;
+    static int[][] domainSize;
 
 	/////////////////////////////////////////////////////////////////////
 	// Main function used to test solver.
@@ -174,7 +174,7 @@ public class Sudoku {
 		// the next variables using 1 of the 5 orderings selected by the user.
 		// By default, it is hardcoded to the method FindUnassignedVariable(),
 		// which corresponds to the "1) Default static ordering" option.
-		variable = MyOriginalRandomOrderingOpt3(grid);
+		variable = MyMinRemainingValueOrderingOpt4(grid);
 
 		// If there is no unassigned location, we are done
 		if (variable == null)
@@ -235,21 +235,10 @@ public class Sudoku {
 
 	static SudokuCoord MyOriginalRandomOrderingOpt3(int grid[][]) {
 		Random rd = new Random();
-		// int randomRow = rd.nextInt(9);
-		// int randomCol = rd.nextInt(9);
-
-		// int[] row = new int[81];
-		// int[] col = new int[81];
 
 		List<Integer> rowList = new ArrayList<Integer>();
 		List<Integer> colList = new ArrayList<Integer>();
 
-		// int gridLen = 81;
-		// while (gridLen >= 0) {
-		// if (grid[randomRow][randomCol].value == SudokuCoord.UNASSIGNED) {
-		// return grid[randomRow][randomCol];
-		// }
-		// }
 
 		for (int row = 0; row < N; row++)
 			for (int col = 0; col < N; col++)
@@ -257,28 +246,70 @@ public class Sudoku {
 					rowList.add(row);
 					colList.add(col);
 				}
-		int randomIndex = rd.nextInt(rowList.size() + 2); // 9?
 
-		return new SudokuCoord(rowList.get(randomIndex + 1), colList.get(randomIndex + 1));
-
-		// iterate through the grid
-
-		// check if (grid[randomRow][randomCol] == UNASSIGNED)
-
-		// return grid[randomRow][randomCol]
-
-		// int var = grid.length;
-		// int[] RCpair = new int[var];
-
-		// for (int row = 0; row < N; row++)
-		// for (int col = 0; col < N; col++)
-		// if (grid[row][col] == UNASSIGNED)
-		// RCpairs.add(row);
-		// return null;
+		int randomIndex;
+		if (!rowList.isEmpty()) {
+			randomIndex = rd.nextInt(rowList.size()); // 9?
+			return new SudokuCoord(rowList.get(randomIndex), colList.get(randomIndex));
+		}
+		System.out.println("Randomized Selection output");
+		printGrid(grid);
+		if (rowList.isEmpty())
+			return null;
+		return null;
 	}
 
 	static SudokuCoord MyMinRemainingValueOrderingOpt4(int grid[][]) {
-		return null;
+
+		for(int i = 0; i < 9; i ++) {
+            for (int j = 0; j < 9; j ++) {
+                int count = 0;
+                // if unassigned variable count domain size
+                if (grid[i][j] == 0) {
+                    for (int k = 0; k < 9; k ++) {
+                        if(domain[i][j][k] == 0) {
+                            count++;
+                        }
+                    }
+                } else {
+                    // else, variable assigned set count to 10
+                    // bigger than any unassigned value so will not be picked for assigning
+                    count = 10;
+                }
+                // once counting has finished, set value in domainSize
+                domainSize[i][j] = count;
+                // if domain size is zero return false so that backtracking can occur
+                if (count == 0) {
+					break;
+                }
+
+			}
+		}
+
+		int[] smallest = null;
+
+		// find first value with solution value of 0 (unassigned)
+		for(int row = 0; row < N; row ++){
+			for (int col = 0 ; col < N; col++) {
+				if(grid[row][col] == 0) {
+					smallest = new int[] {row, col};
+					break;
+				}
+			}
+		}
+		if (smallest == null) {
+			return null;
+		}
+
+		for ( int row = 0; row < N; row++) {
+			for (int col = 0; col < N; col++) { // line 370
+				if (domainSize[row][col] < domainSize[smallest[0]][smallest[1]]) {
+					smallest[0] = row;
+					smallest[1] = col;
+				}
+			}
+		}
+		return new SudokuCoord(smallest[0], smallest[1]);
 	}
 
 	static SudokuCoord MyMaxRemainingValueOrderingOpt5(int grid[][]) {
