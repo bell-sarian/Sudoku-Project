@@ -14,59 +14,60 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
-public class Sudoku
-{
+import jdk.internal.net.http.common.Pair;
+
+public class Sudoku {
 	// Constants
-	final static int UNASSIGNED = 0; //UNASSIGNED is used for empty cells in sudoku grid	
-	final static int N = 9;//N is used for size of Sudoku grid. Size will be NxN
+	final static int UNASSIGNED = 0; // UNASSIGNED is used for empty cells in sudoku grid
+	final static int N = 9;// N is used for size of Sudoku grid. Size will be NxN
 	static int numBacktracks = 0;
 
 	/////////////////////////////////////////////////////////////////////
 	// Main function used to test solver.
-	public static void main(String[] args) throws FileNotFoundException
-	{
+	public static void main(String[] args) throws FileNotFoundException {
 		// Reads in from TestCase.txt (sample sudoku puzzle).
 		// 0 means unassigned cells - You can search the internet for more test cases.
 		Scanner fileScan = new Scanner(new File("TestCase.txt"));
 
 		// Reads case into grid 2D int array
 		int grid[][] = new int[9][9];
-		for (int r = 0; r < 9; r++)
-		{
+		for (int r = 0; r < 9; r++) {
 			String row = fileScan.nextLine();
-			String [] cols = row.split(",");
+			String[] cols = row.split(",");
 			for (int c = 0; c < cols.length; c++)
 				grid[r][c] = Integer.parseInt(cols[c].trim());
 		}
-		
+
 		// Prints out the unsolved sudoku puzzle (as is)
 		System.out.println("Unsolved sudoku puzzle:");
 		printGrid(grid);
-		
+
 		// Setup timer - Obtain the time before solving
 		long stopTime = 0L;
 		long startTime = System.currentTimeMillis();
-		
+
 		// Attempts to solve and prints results
-		if (SolveSudoku(grid) == true)
-		{
+		if (SolveSudoku(grid) == true) {
 			// Get stop time once the algorithm has completed solving the puzzle
 			stopTime = System.currentTimeMillis();
 			System.out.println("Algorithmic runtime: " + (stopTime - startTime) + "ms");
 			System.out.println("Number of backtracks: " + numBacktracks);
-			
+
 			// Sanity check to make sure the computed solution really IS solved
-			if (!isSolved(grid))
-			{
+			if (!isSolved(grid)) {
 				System.err.println("An error has been detected in the solution.");
 				System.exit(0);
 			}
 			System.out.println("\n\nSolved sudoku puzzle:");
 			printGrid(grid);
-		}
-		else
+		} else
 			System.out.println("No solution exists");
 	}
 
@@ -74,12 +75,90 @@ public class Sudoku
 	// Write code here which returns true if the sudoku puzzle was solved
 	// correctly, and false otherwise. In short, it should check that each
 	// row, column, and 3x3 square of 9 cells maintain the ALLDIFF constraint.
-	private static boolean isSolved(int[][] grid)
-	{
-		System.out.println("TODO: Update the code here to complete the method.");
-		System.out.println("The default test case in TestCase.txt IS valid and this method should return true for it.");
-		System.out.println("It is currently hardcoded to return false just so that it compiles.");
-		return false; 
+	private static boolean isSolved(int[][] grid) {
+		// System.out.println("TODO: Update the code here to complete the method.");
+		// System.out.println("The default test case in TestCase.txt IS valid and this
+		// method should return true for it.");
+		// System.out.println("It is currently hardcoded to return false just so that it
+		// compiles.");
+
+		// 3, 0, 6, 5, 0, 8, 4, 0, 0
+		// 5, 2, 0, 0, 0, 0, 0, 0, 0
+		// 0, 8, 7, 0, 0, 0, 0, 3, 1
+		// 0, 0, 3, 0, 1, 0, 0, 8, 0
+		// 9, 0, 0, 8, 6, 3, 0, 0, 5
+		// 0, 5, 0, 0, 9, 0, 6, 0, 0
+		// 1, 3, 0, 0, 0, 0, 2, 5, 0
+		// 0, 0, 0, 0, 0, 0, 0, 7, 4
+		// 0, 0, 5, 2, 0, 6, 3, 0, 0
+
+		// boolean array that stores unique numbers in the Sudoku table and returns true
+		// if they are
+		boolean[] uniqueValue = new boolean[10]; // stores values from 1 to 9
+		int RC = 1;
+		int CR = 1;
+		// Rows
+		for (int r = 0; r < 9; r++) {
+
+			Arrays.fill(uniqueValue, false); // fill in all the values w/ false
+
+			// traverse rows of grid
+			for (int c = 0; c < 9; c++) {
+				RC = grid[r][c]; // captures value at current (Row, Col)
+			}
+
+			// check if current (row, col) value in boolean array is true, if not return
+			// false
+			if (uniqueValue[RC]) {
+				return false;
+			}
+			uniqueValue[RC] = true;
+		}
+
+		// Columns
+		for (int r = 0; r < 9; r++) {
+			Arrays.fill(uniqueValue, false); // fill in all the values w/ false
+
+			for (int c = 0; c < 9; c++) {
+				CR = grid[c][r]; // captures value at current (Col, Row)
+			}
+
+			// check if current (col, row) value in boolean array is true, if not return
+			// false
+			if (uniqueValue[CR]) {
+				return false;
+			}
+
+			uniqueValue[CR] = true;
+		}
+
+		// Squares
+		for (int r = 0; r < 7; r += 3) {
+
+			for (int c = 0; c < 7; c += 3) {
+
+				Arrays.fill(uniqueValue, false);
+
+				for (int sh = 0; sh < 3; sh++) { // square horizontal
+
+					for (int sv = 0; sv < 3; sv++) { // square vertical
+
+						int SQR = r + sh; // row number of current square
+
+						int SQC = c + sv;
+
+						int SQRSQC = grid[SQR][SQC];
+
+						if (uniqueValue[SQRSQC]) {
+							return false;
+						}
+						uniqueValue[SQRSQC] = true;
+					}
+				}
+
+			}
+		}
+		return true;
 	}
 
 	/////////////////////////////////////////////////////////////////////
@@ -87,16 +166,15 @@ public class Sudoku
 	// all unassigned locations in such a way to meet the requirements
 	// for Sudoku solution (non-duplication across rows, columns, and boxes)
 	/////////////////////////////////////////////////////////////////////
-	static boolean SolveSudoku(int grid[][])
-	{
+	static boolean SolveSudoku(int grid[][]) {
 		// Select next unassigned variable
 		SudokuCoord variable;
-		
-		// TODO: Here, you will create an IF-ELSEIF-ELSE statement to select 
+
+		// TODO: Here, you will create an IF-ELSEIF-ELSE statement to select
 		// the next variables using 1 of the 5 orderings selected by the user.
-		// By default, it is hardcoded to the method FindUnassignedVariable(), 
+		// By default, it is hardcoded to the method FindUnassignedVariable(),
 		// which corresponds to the "1) Default static ordering" option.
-		variable = FindUnassignedVariable(grid);
+		variable = MyOriginalRandomOrderingOpt3(grid);
 
 		// If there is no unassigned location, we are done
 		if (variable == null)
@@ -106,11 +184,9 @@ public class Sudoku
 		int col = variable.col;
 
 		// consider digits 1 to 9
-		for (int num = 1; num <= 9; num++)
-		{
+		for (int num = 1; num <= 9; num++) {
 			// if looks promising
-			if (isSafe(grid, row, col, num))
-			{
+			if (isSafe(grid, row, col, num)) {
 				// make tentative assignment
 				grid[row][col] = num;
 
@@ -122,7 +198,7 @@ public class Sudoku
 				grid[row][col] = UNASSIGNED;
 			}
 		}
-		
+
 		// Increment the number of backtracks
 		numBacktracks++;
 		return false; // This triggers backtracking
@@ -134,8 +210,7 @@ public class Sudoku
 	// that is unassigned, and true is returned. If no unassigned entries
 	// remain, null is returned.
 	/////////////////////////////////////////////////////////////////////
-	static SudokuCoord FindUnassignedVariable(int grid[][])
-	{
+	static SudokuCoord FindUnassignedVariable(int grid[][]) {
 		for (int row = 0; row < N; row++)
 			for (int col = 0; col < N; col++)
 				if (grid[row][col] == UNASSIGNED)
@@ -149,29 +224,72 @@ public class Sudoku
 	// needed (you shouldn't need to for the first two, but it may prove
 	// helpful for the last two methods).
 	/////////////////////////////////////////////////////////////////////
-	static SudokuCoord MyOriginalStaticOrderingOpt2(int grid[][])
-	{
+	static SudokuCoord MyOriginalStaticOrderingOpt2(int grid[][]) {
+		// starts from bottom-left corner and goes to top-right
+		for (int row = N - 1; row >= 0; row--)
+			for (int col = 0; col < N; col++)
+				if (grid[row][col] == UNASSIGNED)
+					return new SudokuCoord(row, col);
 		return null;
 	}
-	static SudokuCoord MyOriginalRandomOrderingOpt3(int grid[][])
-	{
+
+	static SudokuCoord MyOriginalRandomOrderingOpt3(int grid[][]) {
+		Random rd = new Random();
+		// int randomRow = rd.nextInt(9);
+		// int randomCol = rd.nextInt(9);
+
+		// int[] row = new int[81];
+		// int[] col = new int[81];
+
+		List<Integer> rowList = new ArrayList<Integer>();
+		List<Integer> colList = new ArrayList<Integer>();
+
+		// int gridLen = 81;
+		// while (gridLen >= 0) {
+		// if (grid[randomRow][randomCol].value == SudokuCoord.UNASSIGNED) {
+		// return grid[randomRow][randomCol];
+		// }
+		// }
+
+		for (int row = 0; row < N; row++)
+			for (int col = 0; col < N; col++)
+				if (grid[row][col] == UNASSIGNED) {
+					rowList.add(row);
+					colList.add(col);
+				}
+		int randomIndex = rd.nextInt(rowList.size() + 2); // 9?
+
+		return new SudokuCoord(rowList.get(randomIndex + 1), colList.get(randomIndex + 1));
+
+		// iterate through the grid
+
+		// check if (grid[randomRow][randomCol] == UNASSIGNED)
+
+		// return grid[randomRow][randomCol]
+
+		// int var = grid.length;
+		// int[] RCpair = new int[var];
+
+		// for (int row = 0; row < N; row++)
+		// for (int col = 0; col < N; col++)
+		// if (grid[row][col] == UNASSIGNED)
+		// RCpairs.add(row);
+		// return null;
+	}
+
+	static SudokuCoord MyMinRemainingValueOrderingOpt4(int grid[][]) {
 		return null;
 	}
-	static SudokuCoord MyMinRemainingValueOrderingOpt4(int grid[][])
-	{
+
+	static SudokuCoord MyMaxRemainingValueOrderingOpt5(int grid[][]) {
 		return null;
 	}
-	static SudokuCoord MyMaxRemainingValueOrderingOpt5(int grid[][])
-	{
-		return null;
-	}
-	
+
 	/////////////////////////////////////////////////////////////////////
 	// Returns a boolean which indicates whether any assigned entry
 	// in the specified row matches the given number.
 	/////////////////////////////////////////////////////////////////////
-	static boolean UsedInRow(int grid[][], int row, int num)
-	{
+	static boolean UsedInRow(int grid[][], int row, int num) {
 		for (int col = 0; col < N; col++)
 			if (grid[row][col] == num)
 				return true;
@@ -182,8 +300,7 @@ public class Sudoku
 	// Returns a boolean which indicates whether any assigned entry
 	// in the specified column matches the given number.
 	/////////////////////////////////////////////////////////////////////
-	static boolean UsedInCol(int grid[][], int col, int num)
-	{
+	static boolean UsedInCol(int grid[][], int col, int num) {
 		for (int row = 0; row < N; row++)
 			if (grid[row][col] == num)
 				return true;
@@ -194,11 +311,10 @@ public class Sudoku
 	// Returns a boolean which indicates whether any assigned entry
 	// within the specified 3x3 box matches the given number.
 	/////////////////////////////////////////////////////////////////////
-	static boolean UsedInBox(int grid[][], int boxStartRow, int boxStartCol, int num)
-	{
+	static boolean UsedInBox(int grid[][], int boxStartRow, int boxStartCol, int num) {
 		for (int row = 0; row < 3; row++)
 			for (int col = 0; col < 3; col++)
-				if (grid[row+boxStartRow][col+boxStartCol] == num)
+				if (grid[row + boxStartRow][col + boxStartCol] == num)
 					return true;
 		return false;
 	}
@@ -207,34 +323,29 @@ public class Sudoku
 	// Returns a boolean which indicates whether it will be legal to assign
 	// num to the given row, col location.
 	/////////////////////////////////////////////////////////////////////
-	static boolean isSafe(int grid[][], int row, int col, int num)
-	{
+	static boolean isSafe(int grid[][], int row, int col, int num) {
 		// Check if 'num' is not already placed in current row,
 		// current column and current 3x3 box
-		return !UsedInRow(grid, row, num) &&
-				!UsedInCol(grid, col, num) &&
-				!UsedInBox(grid, row - row%3 , col - col%3, num);
+		return !UsedInRow(grid, row, num) && !UsedInCol(grid, col, num)
+				&& !UsedInBox(grid, row - row % 3, col - col % 3, num);
 	}
 
 	/////////////////////////////////////////////////////////////////////
 	// A utility function to print grid
 	/////////////////////////////////////////////////////////////////////
-	static void printGrid(int grid[][])
-	{
-		for (int row = 0; row < N; row++)
-		{
-			for (int col = 0; col < N; col++)
-			{
+	static void printGrid(int grid[][]) {
+		for (int row = 0; row < N; row++) {
+			for (int col = 0; col < N; col++) {
 				if (grid[row][col] == 0)
 					System.out.print("- ");
 				else
 					System.out.print(grid[row][col] + " ");
-				
-				if ((col+1) % 3 == 0)
+
+				if ((col + 1) % 3 == 0)
 					System.out.print(" ");
-			}	    	   
+			}
 			System.out.print("\n");
-			if ((row+1) % 3 == 0)
+			if ((row + 1) % 3 == 0)
 				System.out.println();
 		}
 	}
