@@ -26,8 +26,6 @@ public class Sudoku {
 	final static int UNASSIGNED = 0; // UNASSIGNED is used for empty cells in sudoku grid
 	final static int N = 9;// N is used for size of Sudoku grid. Size will be NxN
 	static int numBacktracks = 0;
-	static int[][][] domain;
-    static int[][] domainSize;
 
 	/////////////////////////////////////////////////////////////////////
 	// Main function used to test solver.
@@ -261,60 +259,73 @@ public class Sudoku {
 
 	static SudokuCoord MyMinRemainingValueOrderingOpt4(int grid[][]) {
 
-		for(int i = 0; i < 9; i ++) {
-            for (int j = 0; j < 9; j ++) {
-                int count = 0;
-                // if unassigned variable count domain size
-                if (grid[i][j] == 0) {
-                    for (int k = 0; k < 9; k ++) {
-                        if(domain[i][j][k] == 0) {
-                            count++;
-                        }
-                    }
-                } else {
-                    // else, variable assigned set count to 10
-                    // bigger than any unassigned value so will not be picked for assigning
-                    count = 10;
-                }
-                // once counting has finished, set value in domainSize
-                domainSize[i][j] = count;
-                // if domain size is zero return false so that backtracking can occur
-                if (count == 0) {
-					break;
-                }
+		List<Integer> domain = new ArrayList<Integer>(); // stores values from 1 to 9
+		List<Integer> rowList = new ArrayList<Integer>(); // row index of unassigned  values
+		List<Integer> colList = new ArrayList<Integer>();  // col index of unassigned values
+		List<Integer> domSize = new ArrayList<Integer>(); // domain sizes of each row,col location
 
-			}
+		for (int d =1; d < 10; d++) { // populates domain array
+			domain.add(d);
+			// System.out.println("Domain at index " + d + ": " + domain.get(d));
 		}
+		System.out.println("Starting Domain: " + domain);
 
-		int[] smallest = null;
-
-		// find first value with solution value of 0 (unassigned)
-		for(int row = 0; row < N; row ++){
-			for (int col = 0 ; col < N; col++) {
-				if(grid[row][col] == 0) {
-					smallest = new int[] {row, col};
-					break;
+		for (int row = 0; row < N; row++) {
+			for (int col = 0; col < N; col++) {
+				System.out.println("Value at row: " + row + ", col: "+ col+" is: "+ grid[row][col]);
+				if (grid[row][col] == UNASSIGNED) {
+					rowList.add(row);
+					colList.add(col);
+					System.out.println("UNASSIGNED row: " + row + ", col: "+ col);
+				}
+				
+				else if(!domain.isEmpty()) {
+					int index = domain.indexOf(grid[row][col]);
+					domain.remove(index);
+					System.out.println("Current Domain: " + domain);
 				}
 			}
-		}
-		if (smallest == null) {
-			return null;
+			System.out.println("FINAL Domain: " + domain);
+			System.out.println("Domain Size: " + domain.size());
+			System.out.println("Rowlist" + rowList);
+			System.out.println("Collist" + colList);
+			int size = domain.size();
+
+			for(int i = 0; i < rowList.size(); i++) { // adds size of domain to each variable index in domSize
+				domSize.add(size);
+			}
+
+			// System.out.println("domSize " + domSize);
+			System.out.println("\ndomain size for "+ row +" iteration: ");
+			System.out.println(domSize);
+
+			domain.clear();
+			for (int d =1; d < 10; d++) { // populates domain array
+				domain.add(d);
+				// System.out.println("Domain at index " + d + ": " + domain.get(d));
+			}
+			System.out.println("Starting Domain: " + domain);
 		}
 
-		for ( int row = 0; row < N; row++) {
-			for (int col = 0; col < N; col++) { // line 370
-				if (domainSize[row][col] < domainSize[smallest[0]][smallest[1]]) {
-					smallest[0] = row;
-					smallest[1] = col;
+		if (!domSize.isEmpty()) {
+			int min = 10;
+			for( int minIndex = 0; minIndex < domSize.size(); minIndex++) {
+				if (domSize.get(minIndex) < min) {
+					min = minIndex;
 				}
 			}
+			return new SudokuCoord(rowList.get(min), colList.get(min));
 		}
-		return new SudokuCoord(smallest[0], smallest[1]);
+		
+		
+		return null;
 	}
 
 	static SudokuCoord MyMaxRemainingValueOrderingOpt5(int grid[][]) {
 		return null;
 	}
+
+	
 
 	/////////////////////////////////////////////////////////////////////
 	// Returns a boolean which indicates whether any assigned entry
